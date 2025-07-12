@@ -1,0 +1,63 @@
+import warnings
+warnings.filterwarnings('ignore')
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+dataFlow = pd.DataFrame(pd.read_csv("advertising.csv"))
+dataFlow.head()
+dataFlow.shape
+dataFlow.info
+dataFlow.describe()
+dataFlow.isnull().sum()*100/dataFlow.shape[0]
+fig, axs = plt.subplots(3, figsize = (5,5))
+plt1 = sns.boxplot(dataFlow['TV'], ax = axs[0])
+plt2 = sns.boxplot(dataFlow['Newspaper'], ax = axs[1])
+plt3 = sns.boxplot(dataFlow['Radio'], ax = axs[2])
+plt.tight_layout()
+dataFlow.hist()
+plt.show()
+sns.pairplot(dataFlow, x_vars=['TV', 'Newspaper', 'Radio'], y_vars='Sales', height=4, aspect=1, kind='scatter')
+plt.show()
+sns.heatmap(dataFlow.corr(), cmap="YlGnBu", annot = True)
+plt.show()
+msk=np.random.rand(len(dataFlow))>0.8
+train=dataFlow[msk]
+test=dataFlow[~msk]
+fig=plt.figure()
+ax1=fig.add_subplot(111)
+ax1.scatter(train.TV, train.Sales, color='blue')
+ax1.scatter(test.TV, test.Sales, color='red')
+plt.xlabel('TV')
+plt.ylabel('Sales')
+plt.show()
+from sklearn import linear_model
+regression=linear_model.LinearRegression()
+train_x=np.asanyarray(train[['TV']])
+train_y=np.asanyarray(train[['Sales']])
+regression.fit(train_x,train_y)    # to draw line
+## The Coefficients
+print("Coefficients",regression.coef_)
+print("Intercept",regression.intercept_)
+plt.scatter(train.TV, train.Sales, color='blue')
+plt.plot(train_x,regression.coef_[0][0] * train_x + regression.intercept_[0], '-r')    #y=ax+b
+plt.xlabel('TV')
+plt.ylabel('Sales')
+plt.show()
+from sklearn.metrics import r2_score
+import numpy as np
+
+# Prepare the test data arrays
+test_x = np.asanyarray(test[['TV']])
+test_y = np.asanyarray(test[['Sales']])
+
+# Generate predictions using the regression model
+test_y_pred = regression.predict(test_x)
+
+# Calculate and display evaluation metrics
+mae = np.mean(np.absolute(test_y_pred - test_y))
+mse = np.mean((test_y_pred - test_y) ** 2)
+r2 = r2_score(test_y, test_y_pred)
+print("Mean Absolute Error (MAE):", mae)
+print("Mean Squared Error (MSE):", mse)
+print("R-squared (R2) Score:", r2)
